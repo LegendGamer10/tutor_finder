@@ -183,6 +183,51 @@ app.post('/api/tutors/:id/reviews', async (req, res) => {
   res.json({ success: true, message: 'Review posted.' });
 });
 
+// ─── Bookings ──────────────────────────────────────────────
+app.post('/api/bookings', async (req, res) => {
+  const { studentId, tutorId, date, timeSlot } = req.body;
+  if (!studentId || !tutorId || !date || !timeSlot)
+    return res.status(400).json({ success: false, message: 'All booking fields are required.' });
+
+  try {
+    const inserted = await run(
+      'INSERT INTO bookings (studentId, tutorId, date, timeSlot, createdAt) VALUES (?, ?, ?, ?, ?)',
+      [studentId, tutorId, date, timeSlot, new Date().toISOString()]
+    );
+    res.json({ success: true, message: 'Booking requested successfully.', bookingId: inserted.id });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Could not create booking.' });
+  }
+});
+
+app.get('/api/bookings', async (req, res) => {
+  const { studentId, tutorId } = req.query;
+  let query = 'SELECT b.*, t.name as tutorName, t.subject as tutorSubject, u.name as studentName FROM bookings b LEFT JOIN tutors t ON b.tutorId = t.id LEFT JOIN users u ON b.studentId = u.id';
+  let params = [];
+
+  if (studentId) {
+    query += ' WHERE b.studentId = ?';
+    params.push(studentId);
+  } else if (tutorId) {
+    query += ' WHERE b.tutorId = ?';
+    params.push(tutorId);
+  }
+  
+  query += ' ORDER BY b.date ASC, b.timeSlot ASC';
+
+  const bookings = await all(query, params);
+  res.json({ bookings });
+});
+
+app.patch('/api/bookings/:id/status', async (req, res) => {
+  const { status } = req.body;
+  if (!['confirmed', 'cancelled', 'completed'].includes(status)) {
+    return res.status(400).json({ success: false, message: 'Invalid status.' });
+  }
+  await run('UPDATE bookings SET status = ? WHERE id = ?', [status, req.params.id]);
+  res.json({ success: true, message: `Booking ${status}.` });
+});
+
 // ─── Bookmarks ─────────────────────────────────────────────
 app.get('/api/bookmarks', async (req, res) => {
   const { userId } = req.query;

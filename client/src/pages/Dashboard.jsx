@@ -12,6 +12,8 @@ export default function Dashboard() {
   const [bookmarks, setBookmarks] = useState([]);
   const [bookmarkTutors, setBookmarkTutors] = useState([]);
   const [loadingBm, setLoadingBm] = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
   const [profileForm, setProfileForm] = useState({ name: user?.name || '', email: user?.email || '' });
   const [savingProfile, setSavingProfile] = useState(false);
 
@@ -32,6 +34,17 @@ export default function Dashboard() {
         })
         .catch(() => toast.error('Error', 'Could not load saved tutors.'))
         .finally(() => setLoadingBm(false));
+    }
+  }, [tab, user]);
+
+  useEffect(() => {
+    if (tab === 'sessions' && user) {
+      setLoadingSessions(true);
+      fetch(`/api/bookings?studentId=${user.id}`)
+        .then(r => r.json())
+        .then(d => setSessions(d.bookings || []))
+        .catch(() => toast.error('Error', 'Could not load sessions.'))
+        .finally(() => setLoadingSessions(false));
     }
   }, [tab, user]);
 
@@ -86,6 +99,7 @@ export default function Dashboard() {
             <ul className="dash-nav">
               {[
                 { id: 'overview', label: '🏠 Overview' },
+                { id: 'sessions', label: '📅 My Sessions'},
                 { id: 'saved',    label: '♥ Saved Tutors'},
                 { id: 'profile',  label: '⚙️ Edit Profile'},
               ].map(item => (
@@ -126,6 +140,39 @@ export default function Dashboard() {
                   <Link to="/tutors" className="btn btn-primary btn-sm">Find Tutors</Link>
                   <button className="btn btn-outline btn-sm" onClick={() => setTab('saved')}>View Saved</button>
                 </div>
+              </div>
+            )}
+
+            {/* Sessions Tab */}
+            {tab === 'sessions' && (
+              <div className="dash-card">
+                <h2>📅 My Sessions</h2>
+                {loadingSessions ? (
+                  <div style={{ color: 'var(--gray-400)', fontSize: 14 }}>Loading your schedule…</div>
+                ) : sessions.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">📅</div>
+                    <h3>No sessions booked</h3>
+                    <p>When you book a tutor, your upcoming and past sessions will appear here.</p>
+                    <Link to="/tutors" className="btn btn-primary mt-16">Find a Tutor</Link>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {sessions.map(s => (
+                      <div key={s.id} style={{ border: '1px solid var(--gray-100)', borderRadius: 'var(--radius-md)', padding: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>{s.tutorName} <span style={{ fontSize: 12, color: 'var(--primary)', background: 'var(--primary-faint)', padding: '2px 8px', borderRadius: 12, marginLeft: 8 }}>{s.tutorSubject}</span></div>
+                          <div style={{ color: 'var(--gray-500)', fontSize: 14 }}>{new Date(s.date).toLocaleDateString()} at {s.timeSlot}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <span className={`badge ${s.status === 'confirmed' ? 'badge-success' : s.status === 'pending' ? 'badge-secondary' : 'badge-danger'}`} style={{ marginBottom: 8, display: 'inline-block' }}>
+                            {s.status.charAt(0).toUpperCase() + s.status.slice(1)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

@@ -98,6 +98,21 @@ async function initializeDatabase() {
     )
   `);
 
+  // Bookings table
+  await run(`
+    CREATE TABLE IF NOT EXISTS bookings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      studentId INTEGER NOT NULL,
+      tutorId INTEGER NOT NULL,
+      date TEXT NOT NULL,
+      timeSlot TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      createdAt TEXT NOT NULL,
+      FOREIGN KEY (studentId) REFERENCES users(id),
+      FOREIGN KEY (tutorId) REFERENCES tutors(id)
+    )
+  `);
+
   // --- Seed users ---
   const userCount = await get('SELECT COUNT(*) AS count FROM users');
   if (userCount.count === 0) {

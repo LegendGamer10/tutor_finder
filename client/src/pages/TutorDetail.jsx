@@ -26,7 +26,9 @@ export default function TutorDetail() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [booked, setBooked] = useState(false);
+  const [bookingDate, setBookingDate] = useState('');
+  const [bookingTime, setBookingTime] = useState('');
+  const [bookingStatus, setBookingStatus] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -74,10 +76,24 @@ export default function TutorDetail() {
     } catch { toast.error('Error', 'Could not update bookmark.'); }
   };
 
-  const handleBook = () => {
+  const handleBook = async () => {
     if (!isLoggedIn) { toast.warning('Login required', 'Please log in to book a session.'); return; }
-    setBooked(true);
-    toast.success('Session Requested! 🎉', `We'll notify ${tutor.name} about your booking.`);
+    if (!bookingDate || !bookingTime) { toast.warning('Missing info', 'Please select a date and time slot.'); return; }
+    setBookingStatus('loading');
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: user.id, tutorId: tutor.id, date: bookingDate, timeSlot: bookingTime })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      setBookingStatus('success');
+      toast.success('Session Requested! 🎉', `We'll notify ${tutor.name} about your booking.`);
+    } catch (err) {
+      setBookingStatus('error');
+      toast.error('Booking failed', err.message || 'Could not place booking.');
+    }
   };
 
   const handleReview = async (e) => {
@@ -259,14 +275,39 @@ export default function TutorDetail() {
                   </div>
                 ))}
               </div>
-              <button
-                className={`btn btn-primary`}
-                style={{ width: '100%', marginBottom: 10 }}
-                onClick={handleBook}
-                disabled={booked}
-              >
-                {booked ? '✓ Session Requested' : '📅 Book a Session'}
-              </button>
+              {bookingStatus === 'success' ? (
+                <div style={{ background: 'var(--success-faint)', color: 'var(--success)', padding: 16, borderRadius: 'var(--radius-md)', textAlign: 'center', marginBottom: 16 }}>
+                  <div style={{ fontSize: 24, marginBottom: 8 }}>🎉</div>
+                  <strong style={{ display: 'block', marginBottom: 4 }}>Booking Requested!</strong>
+                  <div style={{ fontSize: 13 }}>{tutor.name} will confirm your {bookingDate} at {bookingTime} session soon.</div>
+                </div>
+              ) : (
+                <div style={{ marginBottom: 16 }}>
+                  <div className="form-group" style={{ marginBottom: 10 }}>
+                    <label style={{ fontSize: 13, color: 'var(--gray-500)', fontWeight: 600 }}>Select Date</label>
+                    <input type="date" className="input" value={bookingDate} onChange={e => setBookingDate(e.target.value)} min={new Date().toISOString().split('T')[0]} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 16 }}>
+                    <label style={{ fontSize: 13, color: 'var(--gray-500)', fontWeight: 600 }}>Select Time List</label>
+                    <select className="input" value={bookingTime} onChange={e => setBookingTime(e.target.value)}>
+                      <option value="">Choose a slot...</option>
+                      <option value="10:00 AM">10:00 AM</option>
+                      <option value="11:30 AM">11:30 AM</option>
+                      <option value="02:00 PM">02:00 PM</option>
+                      <option value="04:00 PM">04:00 PM</option>
+                      <option value="06:30 PM">06:30 PM</option>
+                    </select>
+                  </div>
+                  <button
+                    className="btn btn-primary"
+                    style={{ width: '100%', marginBottom: 10 }}
+                    onClick={handleBook}
+                    disabled={bookingStatus === 'loading'}
+                  >
+                    {bookingStatus === 'loading' ? 'Requesting...' : '📅 Request Session'}
+                  </button>
+                </div>
+              )}
               <button className={`btn btn-outline${bookmarked ? ' btn-danger' : ''}`} style={{ width: '100%' }} onClick={handleBookmark}>
                 {bookmarked ? '♥ Saved' : '♡ Save Tutor'}
               </button>
