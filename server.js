@@ -1,9 +1,15 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 const { dbPath, all, get, run, initializeDatabase } = require('./db');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: '*', methods: ['GET', 'POST'] }
+});
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -283,6 +289,51 @@ app.get('/api/contacts', async (req, res) => {
   res.json({ contacts });
 });
 
+// ─── Chat & Messages ───────────────────────────────────────
+app.get('/api/users', async (req, res) => {
+  const users = await all('SELECT id, name, email FROM users');
+  res.json({ users });
+});
+
+app.get('/api/messages/:userId/:otherUserId', async (req, res) => {
+  const { userId, otherUserId } = req.params;
+  const messages = await all(
+    `SELECT * FROM messages 
+     WHERE (senderId = ? AND receiverId = ?) OR (senderId = ? AND receiverId = ?) 
+     ORDER BY id ASC`,
+    [userId, otherUserId, otherUserId, userId]
+  );
+  res.json({ messages });
+});
+
+io.on('connection', (socket) => {
+  socket.on('join', (userId) => {
+    socket.join(`user_${userId}`);
+  });
+
+  socket.on('send_message', async (data) => {
+    if (!data.senderId || !data.receiverId || !data.content) return;
+    try {
+      const now = new Date().toISOString();
+      const inserted = await run(
+        'INSERT INTO messages (senderId, receiverId, content, createdAt) VALUES (?, ?, ?, ?)',
+        [data.senderId, data.receiverId, data.content, now]
+      );
+      const msg = {
+        id: inserted.id,
+        senderId: data.senderId,
+        receiverId: data.receiverId,
+        content: data.content,
+        createdAt: now
+      };
+      io.to(`user_${data.receiverId}`).emit('receive_message', msg);
+      io.to(`user_${data.senderId}`).emit('receive_message', msg);
+    } catch (err) {
+      console.error('Chat error:', err);
+    }
+  });
+});
+
 // ─── Fallback: serve React app for all non-API routes ──────
 app.get('/{*path}', (req, res) => {
   const distIndex = path.join(__dirname, 'client', 'dist', 'index.html');
@@ -297,7 +348,7 @@ app.get('/{*path}', (req, res) => {
 // ─── Start ─────────────────────────────────────────────────
 async function start() {
   await initializeDatabase();
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`\n🚀 Server running on http://localhost:${PORT}`);
     console.log(`📚 API ready — ${PORT} endpoints active`);
     console.log(`🎓 Start React dev server: cd client && npm run dev\n`);

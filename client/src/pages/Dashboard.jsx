@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import TutorCard from '../components/TutorCard';
+import Chat from '../components/Chat';
 
 export default function Dashboard() {
   const { user, updateUser, logout, isLoggedIn } = useAuth();
@@ -99,6 +100,7 @@ export default function Dashboard() {
             <ul className="dash-nav">
               {[
                 { id: 'overview', label: '🏠 Overview' },
+                { id: 'chats',    label: '💬 Messages' },
                 { id: 'sessions', label: '📅 My Sessions'},
                 { id: 'saved',    label: '♥ Saved Tutors'},
                 { id: 'profile',  label: '⚙️ Edit Profile'},
@@ -173,6 +175,17 @@ export default function Dashboard() {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Chats Tab */}
+            {tab === 'chats' && (
+              <div className="dash-card">
+                 <h2>💬 Messages</h2>
+                 <p style={{ fontSize: 13, color: 'var(--gray-500)', marginBottom: 16 }}>
+                    Real-time chat using Socket.io WebSocket connections.
+                 </p>
+                 <Chat currentUser={user} />
               </div>
             )}
 
