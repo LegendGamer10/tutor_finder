@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Johnson",
+    "subject": "math",
+    "location": "Pune",
+    "ratePerHour": 20,
+    "mode": "online",
+    "rating": 4.7
+  },
+  {
+    "id": 2,
+    "name": "Rahul Mehta",
+    "subject": "python",
+    "location": "Mumbai",
+    "ratePerHour": 15,
+    "mode": "online",
+    "rating": 4.5
+  },
+  {
+    "id": 3,
+    "name": "Sneha Kulkarni",
+    "subject": "science",
+    "location": "Nagpur",
+    "ratePerHour": 25,
+    "mode": "in-person",
+    "rating": 4.8
+  },
+  {
+    "id": 4,
+    "name": "David Fernandes",
+    "subject": "english",
+    "location": "Goa",
+    "ratePerHour": 30,
+    "mode": "online",
+    "rating": 4.6
+  },
+  {
+    "id": 5,
+    "name": "Priya Nair",
+    "subject": "history",
+    "location": "Bengaluru",
+    "ratePerHour": 22,
+    "mode": "online",
+    "rating": 4.4
+  },
+  {
+    "id": 6,
+    "name": "Arjun Patil",
+    "subject": "computer",
+    "location": "Pune",
+    "ratePerHour": 35,
+    "mode": "in-person",
+    "rating": 4.9
+  }
+]
