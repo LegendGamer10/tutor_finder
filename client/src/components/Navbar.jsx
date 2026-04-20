@@ -56,6 +56,11 @@ export default function Navbar() {
           <div className="nav-actions">
             {isLoggedIn ? (
               <>
+                {user && user.isAdmin && (
+                  <Link to="/admin" className="btn btn-ghost btn-sm" style={{ color: '#7c3aed' }}>
+                    Admin
+                  </Link>
+                )}
                 <Link to="/dashboard" className="user-chip">
                   <div className="user-avatar">{initials}</div>
                   <span>{user.name.split(' ')[0]}</span>

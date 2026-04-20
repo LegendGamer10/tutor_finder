@@ -13,6 +13,7 @@ import BecomeTutor from './pages/BecomeTutor';
 import HowItWorks from './pages/HowItWorks';
 import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
+import AdminDashboard from './pages/AdminDashboard';
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="/how-it-works"  element={<HowItWorks />} />
             <Route path="/pricing"       element={<Pricing />} />
             <Route path="/contact"       element={<Contact />} />
+            <Route path="/admin"         element={<AdminDashboard />} />
             <Route path="*"              element={<NotFound />} />
           </Routes>
           <Footer />

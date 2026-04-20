@@ -44,6 +44,8 @@ app.post('/api/login', async (req, res) => {
   if (!user)
     return res.status(401).json({ success: false, message: 'Invalid email or password.' });
 
+  user.isAdmin = (user.email === 'user@study.com' || user.email === 'admin@study.com');
+
   return res.json({ success: true, message: 'Login successful.', user });
 });
 
@@ -293,6 +295,26 @@ app.get('/api/contacts', async (req, res) => {
 app.get('/api/users', async (req, res) => {
   const users = await all('SELECT id, name, email FROM users');
   res.json({ users });
+});
+
+// ─── Admin Metrics ─────────────────────────────────────────
+app.get('/api/admin/metrics', async (req, res) => {
+  const [users, tutors, bookings, messages] = await Promise.all([
+    get('SELECT COUNT(*) as count FROM users'),
+    get('SELECT COUNT(*) as count FROM tutors'),
+    get('SELECT COUNT(*) as count FROM bookings'),
+    get('SELECT COUNT(*) as count FROM messages'),
+  ]);
+  
+  res.json({
+    success: true,
+    metrics: {
+      users: users.count,
+      tutors: tutors.count,
+      bookings: bookings.count,
+      messages: messages.count
+    }
+  });
 });
 
 app.get('/api/messages/:userId/:otherUserId', async (req, res) => {
