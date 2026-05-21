@@ -22,11 +22,11 @@ app.use(express.static(path.join(__dirname, 'client', 'dist')));
 // ─── Health ────────────────────────────────────────────────
 app.get('/api/health', async (req, res) => {
   const counts = {
-    users:     (await get('SELECT COUNT(*) AS count FROM users')).count,
-    tutors:    (await get('SELECT COUNT(*) AS count FROM tutors')).count,
-    reviews:   (await get('SELECT COUNT(*) AS count FROM reviews')).count,
+    users: (await get('SELECT COUNT(*) AS count FROM users')).count,
+    tutors: (await get('SELECT COUNT(*) AS count FROM tutors')).count,
+    reviews: (await get('SELECT COUNT(*) AS count FROM reviews')).count,
     bookmarks: (await get('SELECT COUNT(*) AS count FROM bookmarks')).count,
-    contacts:  (await get('SELECT COUNT(*) AS count FROM contacts')).count,
+    contacts: (await get('SELECT COUNT(*) AS count FROM contacts')).count,
   };
   res.json({ status: 'ok', db: dbPath, counts });
 });
@@ -220,7 +220,7 @@ app.get('/api/bookings', async (req, res) => {
     query += ' WHERE b.tutorId = ?';
     params.push(tutorId);
   }
-  
+
   query += ' ORDER BY b.date ASC, b.timeSlot ASC';
 
   const bookings = await all(query, params);
@@ -305,7 +305,7 @@ app.get('/api/admin/metrics', async (req, res) => {
     get('SELECT COUNT(*) as count FROM bookings'),
     get('SELECT COUNT(*) as count FROM messages'),
   ]);
-  
+
   res.json({
     success: true,
     metrics: {

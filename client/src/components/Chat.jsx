@@ -6,7 +6,7 @@ const socket = io(window.location.origin.includes('5173') ? `http://${window.loc
 export default function Chat({ currentUser }) {
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState('');
-  
+
   const [contacts, setContacts] = useState([]);
   const [activeContactId, setActiveContactId] = useState(null);
   const messagesEndRef = useRef(null);
@@ -76,13 +76,13 @@ export default function Chat({ currentUser }) {
           const isActive = c.id === activeContactId;
           return (
             <div key={c.id} onClick={() => setActiveContactId(c.id)} style={{ padding: '12px 16px', background: isActive ? '#fff' : 'transparent', borderLeft: isActive ? '3px solid var(--primary)' : '3px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
-               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #06b6d4)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                 {initials}
-               </div>
-               <div>
-                 <div style={{ fontWeight: 600, fontSize: 14 }}>{c.name}</div>
-                 <div style={{ fontSize: 12, color: 'var(--gray-400)' }}>{isActive ? 'Active 🟢' : 'Offline'}</div>
-               </div>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #06b6d4)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                {initials}
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>{c.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--gray-400)' }}>{isActive ? 'Active 🟢' : 'Offline'}</div>
+              </div>
             </div>
           );
         })}
@@ -102,7 +102,7 @@ export default function Chat({ currentUser }) {
               Say hello! History is saved.
             </div>
           )}
-          
+
           {messages.map((m, i) => {
             const isMe = m.senderId === currentUser.id;
             return (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import TutorCard from '../components/TutorCard';
 import SkeletonCard from '../components/SkeletonCard';
@@ -13,12 +13,16 @@ const BUDGETS = [
   { value: '35-50', label: '$35–$50' },
   { value: '50+',   label: '$50+' },
 ];
-const MODES = [{ value: '', label: 'Any Mode' }, { value: 'online', label: 'Online' }, { value: 'in-person', label: 'In-Person' }];
+const MODES = [
+  { value: '', label: 'Any Mode' },
+  { value: 'online', label: '🌐 Online' },
+  { value: 'in-person', label: '📍 In-Person' },
+];
 const SORTS = [
-  { value: 'rating_desc',  label: 'Highest Rated' },
-  { value: 'price_asc',    label: 'Price: Low → High' },
-  { value: 'price_desc',   label: 'Price: High → Low' },
-  { value: 'newest',       label: 'Newest First' },
+  { value: 'rating_desc',  label: '⭐ Highest Rated' },
+  { value: 'price_asc',    label: '💰 Price: Low → High' },
+  { value: 'price_desc',   label: '💰 Price: High → Low' },
+  { value: 'newest',       label: '🆕 Newest First' },
 ];
 
 const PAGE_SIZE = 9;
@@ -34,11 +38,23 @@ export default function Tutors() {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState('rating_desc');
 
+  // Local search input state (controlled)
+  const [localQ, setLocalQ] = useState('');
+  const [localLocation, setLocalLocation] = useState('');
+  const searchInputRef = useRef(null);
+
   // Filters from URL
+  const q        = searchParams.get('q')        || '';
   const subject  = searchParams.get('subject')  || '';
   const location = searchParams.get('location') || '';
   const budget   = searchParams.get('budget')   || '';
   const modeQ    = searchParams.get('mode')     || '';
+
+  // Sync local state when URL changes
+  useEffect(() => {
+    setLocalQ(q);
+    setLocalLocation(location);
+  }, [q, location]);
 
   const setFilter = (key, val) => {
     const p = new URLSearchParams(searchParams);
@@ -47,10 +63,23 @@ export default function Tutors() {
     setPage(1);
   };
 
+  const applySearch = () => {
+    const p = new URLSearchParams(searchParams);
+    if (localQ.trim()) p.set('q', localQ.trim()); else p.delete('q');
+    if (localLocation.trim()) p.set('location', localLocation.trim()); else p.delete('location');
+    setSearchParams(p);
+    setPage(1);
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') applySearch();
+  };
+
   const fetchTutors = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
+      if (q)       params.set('q', q);
       if (subject)  params.set('subject', subject);
       if (location) params.set('location', location);
       if (budget)   params.set('budget', budget);
@@ -61,10 +90,10 @@ export default function Tutors() {
       let list = data.tutors || [];
 
       // Client-side sort
-      if (sort === 'rating_desc') list = list.sort((a, b) => b.rating - a.rating);
-      else if (sort === 'price_asc') list = list.sort((a, b) => a.ratePerHour - b.ratePerHour);
-      else if (sort === 'price_desc') list = list.sort((a, b) => b.ratePerHour - a.ratePerHour);
-      else list = list.sort((a, b) => b.id - a.id);
+      if (sort === 'rating_desc') list = [...list].sort((a, b) => b.rating - a.rating);
+      else if (sort === 'price_asc') list = [...list].sort((a, b) => a.ratePerHour - b.ratePerHour);
+      else if (sort === 'price_desc') list = [...list].sort((a, b) => b.ratePerHour - a.ratePerHour);
+      else list = [...list].sort((a, b) => b.id - a.id);
 
       setTutors(list);
     } catch {
@@ -72,7 +101,7 @@ export default function Tutors() {
     } finally {
       setLoading(false);
     }
-  }, [subject, location, budget, modeQ, sort]);
+  }, [q, subject, location, budget, modeQ, sort]);
 
   useEffect(() => { fetchTutors(); }, [fetchTutors]);
 
@@ -102,58 +131,105 @@ export default function Tutors() {
     }
   };
 
+  const clearAll = () => { setSearchParams({}); setPage(1); setLocalQ(''); setLocalLocation(''); };
+
   const paginated = tutors.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const totalPages = Math.ceil(tutors.length / PAGE_SIZE);
-  const hasFilters = subject || location || budget || modeQ;
+  const hasFilters = q || subject || location || budget || modeQ;
 
   return (
     <div className="tutors-page">
       <div className="container">
         <div className="tutors-header">
           <h1>Find Your Perfect Tutor</h1>
-          <p>Browse verified tutors across all subjects, budgets, and locations.</p>
+          <p>Browse {tutors.length > 0 && !loading ? `${tutors.length} verified` : 'verified'} tutors across all subjects, budgets, and locations.</p>
         </div>
 
-        {/* Filters Bar */}
-        <div className="filters-bar">
-          <select className="sort-select" value={subject} onChange={e => setFilter('subject', e.target.value)} aria-label="Filter by subject" style={{ marginLeft: 0 }}>
-            {SUBJECTS.map(s => <option key={s} value={s}>{s ? s.charAt(0).toUpperCase() + s.slice(1) : 'All Subjects'}</option>)}
-          </select>
-
-          <input
-            className="input" style={{ width: 160, margin: 0 }}
-            type="text" placeholder="Location..."
-            defaultValue={location}
-            onKeyDown={e => e.key === 'Enter' && setFilter('location', e.target.value)}
-            onBlur={e => setFilter('location', e.target.value)}
-            aria-label="Filter by location"
-          />
-
-          <select className="sort-select" value={budget} onChange={e => setFilter('budget', e.target.value)} aria-label="Filter by budget">
-            {BUDGETS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
-          </select>
-
-          {MODES.map(m => (
-            <button key={m.value} className={`filter-chip${modeQ === m.value ? ' active' : ''}`} onClick={() => setFilter('mode', m.value)}>
-              {m.label}
+        {/* Search + Filters Bar */}
+        <div className="tutors-search-bar">
+          {/* Keyword search */}
+          <div className="tsb-search-row">
+            <div className="tsb-search-field">
+              <span className="tsb-search-icon">🔍</span>
+              <input
+                ref={searchInputRef}
+                className="tsb-search-input"
+                type="text"
+                placeholder="Search by name, subject, or keyword…"
+                value={localQ}
+                onChange={e => setLocalQ(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                aria-label="Search tutors"
+              />
+              {localQ && (
+                <button className="tsb-clear-x" onClick={() => { setLocalQ(''); const p = new URLSearchParams(searchParams); p.delete('q'); setSearchParams(p); }} aria-label="Clear search">✕</button>
+              )}
+            </div>
+            <div className="tsb-loc-field">
+              <span className="tsb-search-icon">📍</span>
+              <input
+                className="tsb-search-input"
+                type="text"
+                placeholder="City (e.g. Pune)"
+                value={localLocation}
+                onChange={e => setLocalLocation(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                aria-label="Location"
+              />
+            </div>
+            <button className="btn btn-primary tsb-submit" onClick={applySearch}>
+              Search
             </button>
-          ))}
+          </div>
 
-          <select className="sort-select" value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} aria-label="Sort tutors">
-            {SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
+          {/* Filter chips row */}
+          <div className="tsb-filters-row">
+            <select className="filter-select" value={subject} onChange={e => setFilter('subject', e.target.value)} aria-label="Filter by subject">
+              {SUBJECTS.map(s => <option key={s} value={s}>{s ? s.charAt(0).toUpperCase() + s.slice(1) : 'All Subjects'}</option>)}
+            </select>
 
-          {hasFilters && (
-            <button className="btn btn-ghost btn-sm" onClick={() => { setSearchParams({}); setPage(1); }}>
-              ✕ Clear filters
-            </button>
-          )}
+            <select className="filter-select" value={budget} onChange={e => setFilter('budget', e.target.value)} aria-label="Filter by budget">
+              {BUDGETS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
+            </select>
+
+            <div className="mode-chips">
+              {MODES.map(m => (
+                <button key={m.value} className={`filter-chip${modeQ === m.value ? ' active' : ''}`} onClick={() => setFilter('mode', m.value)}>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+              <select className="filter-select" value={sort} onChange={e => { setSort(e.target.value); setPage(1); }} aria-label="Sort tutors">
+                {SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+              {hasFilters && (
+                <button className="btn btn-ghost btn-sm" onClick={clearAll} style={{ whiteSpace: 'nowrap' }}>
+                  ✕ Clear
+                </button>
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* Active filters tags */}
+        {hasFilters && (
+          <div className="active-filters">
+            {q && <span className="active-tag">🔍 "{q}" <button onClick={() => { setLocalQ(''); setFilter('q', ''); }}>✕</button></span>}
+            {subject && <span className="active-tag">📚 {subject} <button onClick={() => setFilter('subject', '')}>✕</button></span>}
+            {location && <span className="active-tag">📍 {location} <button onClick={() => { setLocalLocation(''); setFilter('location', ''); }}>✕</button></span>}
+            {budget && <span className="active-tag">💰 {budget}/hr <button onClick={() => setFilter('budget', '')}>✕</button></span>}
+            {modeQ && <span className="active-tag">🌐 {modeQ} <button onClick={() => setFilter('mode', '')}>✕</button></span>}
+          </div>
+        )}
 
         {/* Results meta */}
         {!loading && (
           <div className="results-meta">
-            <span>Showing <strong>{paginated.length}</strong> of <strong>{tutors.length}</strong> tutors</span>
+            <span>
+              {tutors.length === 0 ? 'No tutors found' : <>Showing <strong>{paginated.length}</strong> of <strong>{tutors.length}</strong> tutors</>}
+            </span>
             {hasFilters && <span className="badge badge-primary">Filtered results</span>}
           </div>
         )}
@@ -167,8 +243,8 @@ export default function Tutors() {
           <div className="empty-state">
             <div className="empty-icon">🔍</div>
             <h3>No tutors found</h3>
-            <p>Try adjusting or clearing some filters to see more results.</p>
-            <button className="btn btn-primary mt-16" onClick={() => { setSearchParams({}); setPage(1); }}>Clear All Filters</button>
+            <p>Try adjusting your search or clearing some filters to see more results.</p>
+            <button className="btn btn-primary mt-16" onClick={clearAll}>Clear All Filters</button>
           </div>
         ) : (
           <div className="tutors-grid">
@@ -195,10 +271,12 @@ export default function Tutors() {
         )}
 
         {/* CTA to become tutor */}
-        <div style={{ textAlign: 'center', marginTop: 48, padding: '32px', background: 'var(--gray-50)', borderRadius: 'var(--radius-lg)' }}>
-          <h3 style={{ marginBottom: 8 }}>Are you a tutor?</h3>
-          <p style={{ marginBottom: 20, color: 'var(--gray-500)' }}>Join our platform and start earning by sharing your knowledge.</p>
-          <Link to="/become-tutor" className="btn btn-primary">Apply as Tutor</Link>
+        <div className="tutors-cta-banner">
+          <div>
+            <h3>Are you a tutor?</h3>
+            <p>Join our platform and start earning by sharing your knowledge.</p>
+          </div>
+          <Link to="/become-tutor" className="btn btn-primary">Apply as Tutor →</Link>
         </div>
       </div>
     </div>

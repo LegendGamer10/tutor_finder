@@ -14,6 +14,7 @@ import HowItWorks from './pages/HowItWorks';
 import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
 import AdminDashboard from './pages/AdminDashboard';
+import MeetingRoom from './pages/MeetingRoom';
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/pricing"       element={<Pricing />} />
             <Route path="/contact"       element={<Contact />} />
             <Route path="/admin"         element={<AdminDashboard />} />
+            <Route path="/meeting/:roomId?" element={<MeetingRoom />} />
             <Route path="*"              element={<NotFound />} />
           </Routes>
           <Footer />

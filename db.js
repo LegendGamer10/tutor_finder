@@ -128,18 +128,18 @@ async function initializeDatabase() {
   if (tutorCount.count === 0) {
     const now = new Date().toISOString();
     const seedTutors = [
-      ['Alice Johnson',    'math',      'Pune',       20, 'online',    4.7, 'alice@example.com',   'Passionate math educator with 5+ years helping students master calculus and algebra.', 5],
-      ['Rahul Mehta',      'python',    'Mumbai',     15, 'online',    4.5, 'rahul@example.com',   'Software engineer and Python enthusiast. Teaches beginners to intermediate coders.', 3],
-      ['Sneha Kulkarni',   'science',   'Nagpur',     25, 'in-person', 4.8, 'sneha@example.com',   'Former school teacher specializing in Physics and Chemistry for grades 9-12.', 7],
-      ['David Fernandes',  'english',   'Goa',        30, 'online',    4.6, 'david@example.com',   'English literature graduate helping students with writing, grammar, and comprehension.', 4],
-      ['Priya Nair',       'history',   'Bengaluru',  22, 'online',    4.4, 'priya@example.com',   'History enthusiast with deep knowledge of Indian and world history.', 2],
-      ['Arjun Patil',      'computer',  'Pune',       35, 'in-person', 4.9, 'arjun@example.com',   'Full-stack developer with 8 years industry experience. Exceptional at breaking down complex topics.', 8],
-      ['Meera Rao',        'math',      'Hyderabad',  18, 'online',    4.6, 'meera@example.com',   'Mathematics postgraduate focusing on competitive exam preparation.', 4],
-      ['Karthik Sharma',   'languages', 'Chennai',    20, 'both',      4.5, 'karthik@example.com', 'Fluent in 4 languages. Teaches Hindi, French, and Tamil to beginners and advanced learners.', 6],
-      ['Aisha Khan',       'english',   'Delhi',      28, 'online',    4.7, 'aisha@example.com',   'Published author and English coach helping students with essays, IELTS, and communication.', 5],
-      ['Vikram Singh',     'science',   'Jaipur',     23, 'both',      4.3, 'vikram@example.com',  'Biology and Chemistry tutor for NEET aspirants with a track record of top results.', 3],
-      ['Lina D\'Souza',   'python',    'Bengaluru',  19, 'online',    4.6, 'lina@example.com',    'Data science professional teaching Python, pandas, and ML basics.', 4],
-      ['Naresh Kumar',     'math',      'Mumbai',     16, 'both',      4.4, 'naresh@example.com',  'Affordable math coaching for school students from grades 6 to 10.', 2],
+      ['Alice Johnson', 'math', 'Pune', 20, 'online', 4.7, 'alice@example.com', 'Passionate math educator with 5+ years helping students master calculus and algebra.', 5],
+      ['Rahul Mehta', 'python', 'Mumbai', 15, 'online', 4.5, 'rahul@example.com', 'Software engineer and Python enthusiast. Teaches beginners to intermediate coders.', 3],
+      ['Sneha Kulkarni', 'science', 'Nagpur', 25, 'in-person', 4.8, 'sneha@example.com', 'Former school teacher specializing in Physics and Chemistry for grades 9-12.', 7],
+      ['David Fernandes', 'english', 'Goa', 30, 'online', 4.6, 'david@example.com', 'English literature graduate helping students with writing, grammar, and comprehension.', 4],
+      ['Priya Nair', 'history', 'Bengaluru', 22, 'online', 4.4, 'priya@example.com', 'History enthusiast with deep knowledge of Indian and world history.', 2],
+      ['Arjun Patil', 'computer', 'Pune', 35, 'in-person', 4.9, 'arjun@example.com', 'Full-stack developer with 8 years industry experience. Exceptional at breaking down complex topics.', 8],
+      ['Meera Rao', 'math', 'Hyderabad', 18, 'online', 4.6, 'meera@example.com', 'Mathematics postgraduate focusing on competitive exam preparation.', 4],
+      ['Karthik Sharma', 'languages', 'Chennai', 20, 'both', 4.5, 'karthik@example.com', 'Fluent in 4 languages. Teaches Hindi, French, and Tamil to beginners and advanced learners.', 6],
+      ['Aisha Khan', 'english', 'Delhi', 28, 'online', 4.7, 'aisha@example.com', 'Published author and English coach helping students with essays, IELTS, and communication.', 5],
+      ['Vikram Singh', 'science', 'Jaipur', 23, 'both', 4.3, 'vikram@example.com', 'Biology and Chemistry tutor for NEET aspirants with a track record of top results.', 3],
+      ['Lina D\'Souza', 'python', 'Bengaluru', 19, 'online', 4.6, 'lina@example.com', 'Data science professional teaching Python, pandas, and ML basics.', 4],
+      ['Naresh Kumar', 'math', 'Mumbai', 16, 'both', 4.4, 'naresh@example.com', 'Affordable math coaching for school students from grades 6 to 10.', 2],
     ];
 
     for (const tutor of seedTutors) {

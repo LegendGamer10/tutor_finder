@@ -25,33 +25,71 @@ export default function SearchBar({ defaultValues = {}, compact = false }) {
   const [subject,  setSubject]  = useState(defaultValues.subject  || '');
   const [location, setLocation] = useState(defaultValues.location || '');
   const [budget,   setBudget]   = useState(defaultValues.budget   || '');
+  const [query,    setQuery]    = useState(defaultValues.q        || '');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (subject)  params.set('subject', subject);
-    if (location) params.set('location', location);
-    if (budget)   params.set('budget', budget);
+    if (query.trim()) params.set('q', query.trim());
+    if (subject)      params.set('subject', subject);
+    if (location.trim()) params.set('location', location.trim());
+    if (budget)       params.set('budget', budget);
     navigate(`/tutors?${params.toString()}`);
   };
 
+  if (compact) {
+    return (
+      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8 }}>
+        <input
+          className="input"
+          type="text"
+          placeholder="Search by name or subject…"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          style={{ flex: 1, margin: 0 }}
+          aria-label="Search tutors"
+        />
+        <button type="submit" className="btn btn-primary btn-sm">Search</button>
+      </form>
+    );
+  }
+
   return (
-    <div className={compact ? '' : 'search-box'}>
+    <div className="search-box">
       <form onSubmit={handleSubmit}>
-        <div className="search-row">
+        {/* Keyword row */}
+        <div className="search-keyword-row">
+          <div className="search-keyword-field">
+            <span className="search-keyword-icon">🔍</span>
+            <input
+              className="search-keyword-input"
+              type="text"
+              placeholder="Search by tutor name, subject, or keyword…"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              aria-label="Search tutors"
+            />
+          </div>
+          <button type="submit" className="btn btn-primary search-submit-btn">
+            Find Tutors
+          </button>
+        </div>
+
+        {/* Filters row */}
+        <div className="search-filters-row">
           <div className="search-field">
-            {!compact && <label>Subject</label>}
+            <label>Subject</label>
             <select className="input" value={subject} onChange={e => setSubject(e.target.value)} aria-label="Subject">
               {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
           </div>
 
           <div className="search-field">
-            {!compact && <label>Location</label>}
+            <label>Location</label>
             <input
               className="input"
               type="text"
-              placeholder="City or 'online'"
+              placeholder="City (e.g. Mumbai)"
               value={location}
               onChange={e => setLocation(e.target.value)}
               aria-label="Location"
@@ -59,17 +97,10 @@ export default function SearchBar({ defaultValues = {}, compact = false }) {
           </div>
 
           <div className="search-field">
-            {!compact && <label>Budget / Hour</label>}
+            <label>Budget / Hour</label>
             <select className="input" value={budget} onChange={e => setBudget(e.target.value)} aria-label="Budget">
               {BUDGETS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
             </select>
-          </div>
-
-          <div className="search-field" style={{ justifyContent: 'flex-end' }}>
-            {!compact && <label style={{ opacity: 0 }}>.</label>}
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-              🔍 Find Tutors
-            </button>
           </div>
         </div>
       </form>
